@@ -44,10 +44,12 @@
 </template>
 
 <script>
+import loginApi from '@/api/login';
+import { reactive, ref, onMounted } from '@vue/composition-api';
 import { stripscript, validatePass, validateEmail, validateVCode } from '@/utils/validate';
 export default {
   name: 'login',
-  data() {
+  setup(props, { refs }) {
     let validateUsername = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入用户名'));
@@ -60,8 +62,8 @@ export default {
     // 验证密码
     let validatePassword = (rule, value, callback) => {
       // 过滤后的数据
-      this.ruleForm.password = stripscript(value);
-      value = this.ruleForm.password;
+      ruleForm.password = stripscript(value);
+      value = ruleForm.password;
       if (value === '') {
         callback(new Error("请输入密码"));
       } else if (validatePass(value)) {
@@ -73,13 +75,13 @@ export default {
     // 验证重复密码
     let validatePasswords = (rule, value, callback) => {
       // 如果模块值为login, 直接通过
-      if(this.model === 'login') { callback(); }
+      if(model.value === 'login') { callback(); }
       // 过滤后的数据
-      this.ruleForm.passwords = stripscript(value);
-      value = this.ruleForm.passwords;
+      ruleForm.passwords = stripscript(value);
+      value = ruleForm.passwords;
       if (value === '') {
         callback(new Error('请再次输入密码'));
-      } else if (value != this.ruleForm.password) {
+      } else if (value != ruleForm.password) {
         callback(new Error('重复密码不正确'));
       } else {
         callback();
@@ -95,49 +97,69 @@ export default {
         callback();
       }
     };
-    return {
-      menuTab: [
-        { txt: '登录', current: true, type: 'login' },
-        { txt: '注册', current: false, type: 'register' }
-      ],
-      model: 'login',
-      ruleForm: {
-        username: '',
-        password: '',
-        passwords: '',
-        code: ''
-      },
-      rules: {
-        username: [{ validator: validateUsername, trigger: 'blur' }],
-        password: [{ validator: validatePassword, trigger: 'blur' }],
-        passwords: [{ validator: validatePasswords, trigger: 'blur' }],
-        code: [{ validator: validateCode, trigger: 'blur' }]
-      },
-      loginButtonStatus: false,
-      codeButtonStatus: {
-        status: false
-      }
-    }
-  },
+    // 数据
+    const menuTab = reactive([
+      { txt: '登录', current: true, type: 'login' },
+      { txt: '注册', current: false, type: 'register' }
+    ]);
 
-  created() {},
+    const model = ref('login');
 
-  mounted() {},
+    const ruleForm = reactive({
+      username: '',
+      password: '',
+      passwords: '',
+      code: ''
+    });
 
-  methods: {
-    toggleMenu(data) {
-      this.menuTab.forEach((elem, index) => {
+    const rules = reactive({
+      username: [{ validator: validateUsername, trigger: 'blur' }],
+      password: [{ validator: validatePassword, trigger: 'blur' }],
+      passwords: [{ validator: validatePasswords, trigger: 'blur' }],
+      code: [{ validator: validateCode, trigger: 'blur' }]
+    });
+
+    const loginButtonStatus = ref(false);
+
+    const codeButtonStatus = reactive({
+      status: false
+    });
+
+    // 生命周期
+    onMounted(() => {});
+
+    // 方法
+    const toggleMenu = (data => {
+      menuTab.forEach((elem, index) => {
         elem.current = false;
       });
-      // 高光
       data.current = true;
-      // 修改模块值
-      this.model = data.type;
-    },
+      model.value = data.type;
+    });
 
-    getSms() {},
+    const getSms = (() => {
+      loginApi.GetSms();
+    });
 
-    submitForm(formName) {}
+    const submitForm = (formName => {
+      refs[formName].validate(valid => {
+        if (valid) {
+
+        }
+      });
+    });
+
+    return {
+      menuTab,
+      model,
+      ruleForm,
+      rules,
+      loginButtonStatus,
+      codeButtonStatus,
+      toggleMenu,
+      getSms,
+      submitForm
+    };
   }
 }
 </script>

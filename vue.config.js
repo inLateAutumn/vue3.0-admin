@@ -12,7 +12,7 @@ module.exports = {
   // 默认在生成的静态资源文件名中包含hash以控制缓存
   filenameHashing: true,
   // enlint-loader 是否在保存的时候检查
-  lintOnSave: true,
+  lintOnSave: false,
   // 构建多页面应用，页面的配置
   // pages: {
   //   index: {
@@ -32,8 +32,6 @@ module.exports = {
   //   // 输出文件名会被推导为 `subpage.html`。
   //   subpage: 'src/main.js'
   // },
-  // 是否在开发环境下通过 eslint-loader 在每次保存时 lint 代码 (在生产构建时禁用 eslint-loader)
-  lintOnSave: process.env.NODE_ENV !== 'production',
   // 是否使用包含运行时编译器的 Vue 构建版本
   // runtimeCompiler: false,
   // Babel 显式转译列表
@@ -77,13 +75,27 @@ module.exports = {
   },
   // 所有 webpack-dev-server 的选项都支持
   devServer: {
-    open: false,  // 编译完成是否打开页面
+    open: false, // 编译完成是否打开网页
+    host: '0.0.0.0', // 指定使用地址，默认localhost,0.0.0.0代表可以被外界访问
     port: 8080, // 访问端口
-    host: '0.0.0.0',  // 使用指定地址
     https: false, // 编译失败时刷新页面
-    hot: true,  // 开启热加载
-    hotOnly: true,
-    proxy: null
+    hot: true, // 开启热加载
+    hotOnly: false,
+    proxy: {
+      '/devApi': {
+        target: "http://www.web-jshtml.cn/productapi/token", //API服务器的地址  http://www.web-jshtml.cn/api
+        changeOrigin: true,
+        pathRewrite: {
+          '^/devApi': ''
+        }
+      }
+    },
+    overlay: { // 全屏模式下是否显示脚本错误
+      warnings: true,
+      errors: true
+    },
+    before: app => {
+    }
   },
   // 是否为 Babel 或 TypeScript 使用 thread-loader
   parallel: require('os').cpus().length > 1,
